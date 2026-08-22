@@ -17,6 +17,17 @@
   const statusPill = document.querySelector('[data-status]');
   const emptyResult = document.querySelector('[data-empty-result]');
   const targetWrap = document.querySelector('.target-wrap');
+  const decisionCard = document.querySelector('[data-decision]');
+
+  const decisionFields = {
+    status: document.querySelector('[data-decision-status]'),
+    before: document.querySelector('[data-decision-before]'),
+    proposal: document.querySelector('[data-decision-proposal]'),
+    beforeDensity: document.querySelector('[data-density-before]'),
+    proposalDensity: document.querySelector('[data-density-proposal]'),
+    ratio: document.querySelector('[data-decision-ratio]'),
+    alpha: document.querySelector('[data-decision-alpha]'),
+  };
 
   const metrics = {
     samples: document.querySelector('#metricSamples'),
@@ -39,6 +50,7 @@
     raf: null,
     dragging: false,
     lastIndex: null,
+    lastDecision: null,
   };
 
   const colors = {
@@ -191,13 +203,22 @@
   }
 
   function mhStep(collect = true) {
-    const proposal = state.position + normalRandom() * Number(stepInput.value);
-    const ratio = targetAt(proposal) / targetAt(state.position);
-    const accepted = Math.random() < Math.min(1, ratio);
+    const before = state.position;
+    const proposal = before + normalRandom() * Number(stepInput.value);
+    const beforeDensity = targetAt(before);
+    const proposalDensity = targetAt(proposal);
+    const ratio = proposalDensity / beforeDensity;
+    const alpha = Math.min(1, ratio);
+    const randomDraw = Math.random();
+    const accepted = randomDraw < alpha;
     if (accepted) {
       state.position = proposal;
       state.accepted += 1;
     }
+    state.lastDecision = {
+      before, proposal, beforeDensity, proposalDensity,
+      ratio, alpha, randomDraw, accepted, result: state.position,
+    };
     state.iterations += 1;
     state.recent.push({ position: state.position, accepted });
     if (state.recent.length > 100) state.recent.shift();
@@ -262,8 +283,25 @@
     emptyResult.hidden = state.samples.length > 0;
   }
 
+  function updateDecision() {
+    const decision = state.lastDecision;
+    decisionCard.hidden = decision === null;
+    if (!decision) return;
+
+    decisionCard.dataset.result = decision.accepted ? 'accepted' : 'rejected';
+    decisionFields.status.textContent = decision.accepted
+      ? `採択 → x = ${decision.result.toFixed(2)}`
+      : `棄却 → x = ${decision.result.toFixed(2)} のまま`;
+    decisionFields.before.textContent = decision.before.toFixed(3);
+    decisionFields.proposal.textContent = decision.proposal.toFixed(3);
+    decisionFields.beforeDensity.textContent = `p(x) = ${decision.beforeDensity.toFixed(3)}`;
+    decisionFields.proposalDensity.textContent = `p(x′) = ${decision.proposalDensity.toFixed(3)}`;
+    decisionFields.ratio.textContent = `${decision.proposalDensity.toFixed(3)} / ${decision.beforeDensity.toFixed(3)} = ${decision.ratio.toFixed(3)}`;
+    decisionFields.alpha.textContent = `α = ${decision.alpha.toFixed(3)} · u = ${decision.randomDraw.toFixed(3)}`;
+  }
+
   function renderDynamic() {
-    drawTarget(); drawResult(); drawChain(); updateMetrics();
+    drawTarget(); drawResult(); drawChain(); updateMetrics(); updateDecision();
   }
 
   function resetSamples() {
@@ -274,6 +312,7 @@
     state.position = 5;
     state.accepted = 0;
     state.iterations = 0;
+    state.lastDecision = null;
     renderDynamic();
   }
 

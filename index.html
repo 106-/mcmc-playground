@@ -89,6 +89,31 @@
               <button class="icon-button" type="button" data-action="step" aria-label="1ステップだけ進める" title="1ステップだけ進める">+1</button>
               <button class="icon-button" type="button" data-action="reset" aria-label="サンプリング結果をリセット" title="結果をリセット">↺</button>
             </div>
+
+            <div class="decision-card" data-decision hidden aria-live="polite">
+              <div class="decision-heading">
+                <span>今回の判定</span>
+                <strong data-decision-status>—</strong>
+              </div>
+              <div class="decision-values">
+                <div>
+                  <span>前の値 <i>x</i></span>
+                  <strong data-decision-before>—</strong>
+                  <small data-density-before>p(x) = —</small>
+                </div>
+                <span class="decision-arrow" aria-hidden="true">→</span>
+                <div>
+                  <span>新たな候補 <i>x′</i></span>
+                  <strong data-decision-proposal>—</strong>
+                  <small data-density-proposal>p(x′) = —</small>
+                </div>
+                <div class="ratio-value">
+                  <span>高さの比 <i>p(x′) / p(x)</i></span>
+                  <strong data-decision-ratio>—</strong>
+                  <small data-decision-alpha>α = —</small>
+                </div>
+              </div>
+            </div>
           </article>
 
           <article class="panel result-panel">
