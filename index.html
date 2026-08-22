@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="分布を描いて、メトロポリス・ヘイスティングス法の動きを眺めるインタラクティブ実験室。"
+    />
+    <title>Metropolis-Hastings Playground — 分布を描いて、歩かせよう</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="simple-header">
+        <h1>Metropolis-Hastings Playground</h1>
+        <p>分布を描いて、メトロポリス・ヘイスティングス法でサンプリングする。</p>
+      </header>
+      <main>
+        <section class="lab-grid" aria-label="メトロポリス・ヘイスティングス実験室">
+          <article class="panel target-panel">
+            <div class="panel-heading">
+              <div class="step-title">
+                <span class="step-number">01</span>
+                <div>
+                  <p class="kicker">TARGET</p>
+                  <h2>ほしい分布を描く</h2>
+                </div>
+              </div>
+              <div class="mini-actions" role="group" aria-label="分布のプリセット">
+                <button type="button" class="mini-button is-active" data-preset="uniform">一様</button>
+                <button type="button" class="mini-button" data-preset="double">ふた山</button>
+                <button type="button" class="mini-button" data-preset="skew">かたより</button>
+              </div>
+            </div>
+
+            <div class="canvas-wrap target-wrap">
+              <canvas
+                id="targetCanvas"
+                aria-label="目標分布を描くエリア。マウスまたは指で上下になぞって形を変えられます"
+              ></canvas>
+              <div class="draw-hint" aria-hidden="true">
+                <span class="draw-icon">↗</span>
+                <span>DRAG TO SHAPE</span>
+              </div>
+              <span class="axis-label axis-y">相対的な高さ</span>
+              <span class="axis-value axis-left">0</span>
+              <span class="axis-value axis-right">10</span>
+              <span class="axis-label axis-x">x</span>
+            </div>
+            <p class="panel-tip"><span>✦</span> 線の上をドラッグ。ギザギザでも、変な形でも大丈夫。</p>
+          </article>
+
+          <article class="panel sample-panel">
+            <div class="panel-heading">
+              <div class="step-title">
+                <span class="step-number">02</span>
+                <div>
+                  <p class="kicker">SAMPLE</p>
+                  <h2>MH で歩かせる</h2>
+                </div>
+              </div>
+              <div class="status-pill" data-status="idle"><span></span><b>READY</b></div>
+            </div>
+
+            <div class="controls">
+              <label class="control-block" for="sampleCount">
+                <span><b>サンプル数</b><output id="sampleCountOutput">5,000</output></span>
+                <input id="sampleCount" type="range" min="500" max="20000" step="500" value="5000" />
+                <span class="range-ends"><i>500</i><i>20,000</i></span>
+              </label>
+              <label class="control-block" for="stepSize">
+                <span><b>提案の歩幅 σ</b><output id="stepSizeOutput">0.65</output></span>
+                <input id="stepSize" type="range" min="0.1" max="2.5" step="0.05" value="0.65" />
+                <span class="range-ends"><i>こまかい</i><i>大胆</i></span>
+              </label>
+            </div>
+
+            <div class="walker" aria-label="最近の提案の採択・棄却">
+              <div class="walker-labels"><span>RECENT STEPS</span><span>採択 <i class="accepted-dot"></i> / 棄却 <i class="rejected-dot"></i></span></div>
+              <canvas id="chainCanvas"></canvas>
+            </div>
+
+            <div class="run-actions">
+              <button class="run-button" type="button" data-action="run">
+                <span class="play-icon" aria-hidden="true">▶</span>
+                <span data-run-label>サンプリング開始</span>
+              </button>
+              <button class="icon-button" type="button" data-action="step" aria-label="1ステップだけ進める" title="1ステップだけ進める">+1</button>
+              <button class="icon-button" type="button" data-action="reset" aria-label="サンプリング結果をリセット" title="結果をリセット">↺</button>
+            </div>
+          </article>
+
+          <article class="panel result-panel">
+            <div class="panel-heading result-heading">
+              <div class="step-title">
+                <span class="step-number">03</span>
+                <div>
+                  <p class="kicker">RESULT</p>
+                  <h2>足あとを眺める</h2>
+                </div>
+              </div>
+              <div class="legend" aria-label="グラフの凡例">
+                <span><i class="legend-target"></i>描いた形</span>
+                <span><i class="legend-samples"></i>サンプル</span>
+              </div>
+            </div>
+
+            <div class="canvas-wrap result-wrap">
+              <canvas id="resultCanvas" aria-label="サンプルのヒストグラムと目標分布の比較"></canvas>
+              <div class="empty-result" data-empty-result>
+                <span>···</span>
+                <b>まだ足あとがありません</b>
+                <small>「サンプリング開始」を押すと、ここにヒストグラムが現れます。</small>
+              </div>
+              <span class="axis-value axis-left">0</span>
+              <span class="axis-value axis-right">10</span>
+              <span class="axis-label axis-x">x</span>
+            </div>
+
+            <div class="metrics" aria-live="polite">
+              <div><span>集めたサンプル</span><strong id="metricSamples">0</strong></div>
+              <div><span>採択率</span><strong id="metricAcceptance">—</strong></div>
+              <div><span>いまいる場所</span><strong id="metricPosition">5.00</strong></div>
+              <div class="match-metric"><span>形の近さ</span><strong id="metricMatch">—</strong></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="how-it-works" aria-labelledby="how-title">
+          <div class="how-title-block">
+            <p class="eyebrow">ONE TINY RULE</p>
+            <h2 id="how-title">何が起きてる？</h2>
+          </div>
+          <ol>
+            <li><span>1</span><p><b>次の場所を提案</b><small>いまの場所から、σ ぶんランダムにジャンプ。</small></p></li>
+            <li><span>2</span><p><b>高さをくらべる</b><small>候補と現在地の「分布の高さ」の比を計算。</small></p></li>
+            <li><span>3</span><p><b>採択 or 棄却</b><small>高い方へは必ず。低い方へも、ときどき進む。</small></p></li>
+          </ol>
+          <div class="formula-card">
+            <span>ACCEPTANCE</span>
+            <strong>α = min (1, <i>p(x′)</i> / <i>p(x)</i>)</strong>
+            <small>正規化定数は、比をとると消えてくれる。</small>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

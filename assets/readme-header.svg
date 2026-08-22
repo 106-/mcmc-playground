@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 420" role="img" aria-labelledby="title description">
+  <title id="title">Metropolis-Hastings Playground</title>
+  <desc id="description">青いサンプルのヒストグラムと、ピンクの破線で描かれた目標分布</desc>
+
+  <rect width="1600" height="420" rx="18" fill="#fffef9"/>
+
+  <g fill="none" stroke="#d9ddd4" stroke-width="1.25" stroke-dasharray="2 7" opacity=".95">
+    <path d="M36 32H1564M36 132H1564M36 232H1564M36 332H1564"/>
+    <path d="M36 32V370M189 32V370M342 32V370M495 32V370M648 32V370M800 32V370M953 32V370M1106 32V370M1259 32V370M1412 32V370M1564 32V370"/>
+  </g>
+
+  <g fill="none" stroke="#1747ff" stroke-width="27" stroke-linecap="butt" opacity=".82">
+    <path d="M50 370V246 M82 370V225 M114 370V211 M146 370V198 M178 370V230 M210 370V290 M242 370V294 M274 370V234 M306 370V206 M338 370V166 M370 370V132 M402 370V102 M434 370V173 M466 370V248 M498 370V304 M530 370V268 M562 370V222 M594 370V189 M626 370V174 M658 370V143 M690 370V112 M722 370V170 M754 370V268 M786 370V307 M818 370V278 M850 370V233 M882 370V183 M914 370V172 M946 370V146 M978 370V112 M1010 370V176 M1042 370V248 M1074 370V240 M1106 370V217 M1138 370V184 M1170 370V171 M1202 370V181 M1234 370V138 M1266 370V176 M1298 370V242 M1330 370V226 M1362 370V205 M1394 370V171 M1426 370V151 M1458 370V142 M1490 370V127 M1522 370V180 M1554 370V212"/>
+  </g>
+
+  <path
+    d="M36 233
+       C76 237 96 212 124 184
+       C151 157 176 174 197 212
+       C218 252 225 292 254 296
+       C285 300 307 248 337 190
+       C369 127 392 83 419 100
+       C447 119 459 222 490 281
+       C521 339 548 268 576 224
+       C604 179 631 137 665 108
+       C698 80 719 96 737 171
+       C753 237 772 321 806 304
+       C839 287 866 214 897 166
+       C925 122 949 82 977 96
+       C1005 110 1018 208 1053 228
+       C1088 247 1119 202 1152 172
+       C1184 144 1212 119 1239 126
+       C1265 133 1277 226 1311 252
+       C1346 279 1380 231 1412 185
+       C1442 140 1467 116 1490 142
+       C1514 170 1513 225 1564 232"
+    fill="none"
+    stroke="#ff6fae"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-dasharray="10 10"
+  />
+
+  <g>
+    <path d="M402 102V40" stroke="#59615b" stroke-width="1.25" opacity=".65"/>
+    <circle cx="402" cy="40" r="7" fill="#c9ff45" stroke="#17221b" stroke-width="2"/>
+  </g>
+
+  <path d="M36 370H1564" stroke="#bfc5bc" stroke-width="1"/>
+  <g fill="#687169" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="12">
+    <text x="36" y="398">0</text>
+    <text x="1532" y="398" text-anchor="end">x</text>
+    <text x="1564" y="398" text-anchor="end">10</text>
+  </g>
+</svg>
