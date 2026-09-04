@@ -6,7 +6,7 @@
 
 ## 使う
 
-[MCMC Playground](https://106-.github.io/metropolis-hastings-playground/)
+[MCMC Playground](https://106-.github.io/mcmc-playground/)
 
 ## 操作
 
