@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="分布を描いて、メトロポリス・ヘイスティングス法の動きを眺めるインタラクティブ実験室。"
+      content="分布を描いて、MH・HMC・NUTSの動きを比べるインタラクティブ実験室。"
     />
-    <title>Metropolis-Hastings Playground — 分布を描いて、歩かせよう</title>
+    <title>MCMC Playground — MH・HMC・NUTSを見比べる</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="page-shell">
       <header class="simple-header">
-        <h1>Metropolis-Hastings Playground</h1>
-        <p>分布を描いて、メトロポリス・ヘイスティングス法でサンプリングする。</p>
+        <h1>MCMC Playground</h1>
+        <p>分布を描いて、MH・HMC・NUTSでサンプリングする。</p>
       </header>
       <main>
-        <section class="lab-grid" aria-label="メトロポリス・ヘイスティングス実験室">
+        <section class="lab-grid" aria-label="MCMCサンプリング実験室">
           <article class="panel target-panel">
             <div class="panel-heading">
               <div class="step-title">
@@ -48,7 +48,18 @@
               <span class="axis-value axis-right">10</span>
               <span class="axis-label axis-x">x</span>
             </div>
-            <p class="panel-tip"><span>✦</span> 線の上をドラッグ。ギザギザでも、変な形でも大丈夫。</p>
+            <div class="fit-controls">
+              <div class="fit-legend" aria-label="分布の凡例">
+                <span><i class="legend-raw"></i>手描き</span>
+                <span><i class="legend-fit"></i>滑らかフィット</span>
+                <span class="fit-error">差 RMSE <output id="fitErrorOutput">0.0%</output></span>
+              </div>
+              <label for="smoothing">
+                <span>なめらかさ</span>
+                <input id="smoothing" type="range" min="0.5" max="10" step="0.5" value="3.5" />
+              </label>
+            </div>
+            <p class="panel-tip"><span>✦</span> 青が入力、ピンクがHMC/NUTSの勾配計算に使う分布です。</p>
           </article>
 
           <article class="panel sample-panel">
@@ -57,10 +68,22 @@
                 <span class="step-number">02</span>
                 <div>
                   <p class="kicker">SAMPLE</p>
-                  <h2>MH で歩かせる</h2>
+                  <h2 data-sampler-heading>MH で歩かせる</h2>
                 </div>
               </div>
               <div class="status-pill" data-status="idle"><span></span><b>READY</b></div>
+            </div>
+
+            <div class="sampler-tabs" role="radiogroup" aria-label="サンプラー">
+              <button type="button" role="radio" aria-checked="true" class="is-active" data-sampler="mh">
+                <b>MH</b><small>高さの比</small>
+              </button>
+              <button type="button" role="radio" aria-checked="false" data-sampler="hmc">
+                <b>HMC</b><small>勾配と運動量</small>
+              </button>
+              <button type="button" role="radio" aria-checked="false" data-sampler="nuts">
+                <b>NUTS</b><small>軌道を自動調整</small>
+              </button>
             </div>
 
             <div class="controls">
@@ -69,15 +92,37 @@
                 <input id="sampleCount" type="range" min="500" max="20000" step="500" value="5000" />
                 <span class="range-ends"><i>500</i><i>20,000</i></span>
               </label>
-              <label class="control-block" for="stepSize">
+              <label class="control-block" for="stepSize" data-control="mh">
                 <span><b>提案の歩幅 σ</b><output id="stepSizeOutput">0.65</output></span>
                 <input id="stepSize" type="range" min="0.1" max="2.5" step="0.05" value="0.65" />
                 <span class="range-ends"><i>こまかい</i><i>大胆</i></span>
               </label>
+              <label class="control-block" for="hmcStepSize" data-control="hmc" hidden>
+                <span><b>積分幅 ε</b><output id="hmcStepSizeOutput">0.18</output></span>
+                <input id="hmcStepSize" type="range" min="0.03" max="0.5" step="0.01" value="0.18" />
+                <span class="range-ends"><i>安定</i><i>大きい</i></span>
+              </label>
+              <label class="control-block" for="hmcLeapfrog" data-control="hmc" hidden>
+                <span><b>リープフロッグ L</b><output id="hmcLeapfrogOutput">12</output></span>
+                <input id="hmcLeapfrog" type="range" min="2" max="32" step="1" value="12" />
+                <span class="range-ends"><i>短い軌道</i><i>長い軌道</i></span>
+              </label>
+              <label class="control-block" for="nutsStepSize" data-control="nuts" hidden>
+                <span><b>積分幅 ε</b><output id="nutsStepSizeOutput">0.16</output></span>
+                <input id="nutsStepSize" type="range" min="0.03" max="0.4" step="0.01" value="0.16" />
+                <span class="range-ends"><i>安定</i><i>大きい</i></span>
+              </label>
+              <label class="control-block" for="nutsDepth" data-control="nuts" hidden>
+                <span><b>最大ツリー深度</b><output id="nutsDepthOutput">6</output></span>
+                <input id="nutsDepth" type="range" min="2" max="8" step="1" value="6" />
+                <span class="range-ends"><i>最大4 step</i><i>最大256 step</i></span>
+              </label>
             </div>
 
-            <div class="walker" aria-label="最近の提案の採択・棄却">
-              <div class="walker-labels"><span>RECENT STEPS</span><span>採択 <i class="accepted-dot"></i> / 棄却 <i class="rejected-dot"></i></span></div>
+            <p class="sampler-note" data-sampler-note>手描きの分布をそのまま目標にします。</p>
+
+            <div class="walker" aria-label="最近のサンプリングステップ">
+              <div class="walker-labels"><span>RECENT STEPS</span><span data-step-legend>採択 <i class="accepted-dot"></i> / 棄却 <i class="rejected-dot"></i></span></div>
               <canvas id="chainCanvas"></canvas>
             </div>
 
@@ -97,18 +142,18 @@
               </div>
               <div class="decision-values">
                 <div>
-                  <span>前の値 <i>x</i></span>
+                  <span data-before-label>前の値 <i>x</i></span>
                   <strong data-decision-before>—</strong>
                   <small data-density-before>p(x) = —</small>
                 </div>
                 <span class="decision-arrow" aria-hidden="true">→</span>
                 <div>
-                  <span>新たな候補 <i>x′</i></span>
+                  <span data-proposal-label>新たな候補 <i>x′</i></span>
                   <strong data-decision-proposal>—</strong>
                   <small data-density-proposal>p(x′) = —</small>
                 </div>
                 <div class="ratio-value">
-                  <span>高さの比 <i>p(x′) / p(x)</i></span>
+                  <span data-comparison-label>高さの比 <i>p(x′) / p(x)</i></span>
                   <strong data-decision-ratio>—</strong>
                   <small data-decision-alpha>α = —</small>
                 </div>
@@ -126,7 +171,8 @@
                 </div>
               </div>
               <div class="legend" aria-label="グラフの凡例">
-                <span><i class="legend-target"></i>描いた形</span>
+                <span><i class="legend-target"></i>手描き</span>
+                <span><i class="legend-smooth"></i>滑らか</span>
                 <span><i class="legend-samples"></i>サンプル</span>
               </div>
             </div>
@@ -145,7 +191,7 @@
 
             <div class="metrics" aria-live="polite">
               <div><span>集めたサンプル</span><strong id="metricSamples">0</strong></div>
-              <div><span>採択率</span><strong id="metricAcceptance">—</strong></div>
+              <div><span data-acceptance-label>採択率</span><strong id="metricAcceptance">—</strong></div>
               <div><span>いまいる場所</span><strong id="metricPosition">5.00</strong></div>
               <div class="match-metric"><span>形の近さ</span><strong id="metricMatch">—</strong></div>
             </div>
@@ -158,19 +204,20 @@
             <h2 id="how-title">何が起きてる？</h2>
           </div>
           <ol>
-            <li><span>1</span><p><b>次の場所を提案</b><small>いまの場所から、σ ぶんランダムにジャンプ。</small></p></li>
-            <li><span>2</span><p><b>高さをくらべる</b><small>候補と現在地の「分布の高さ」の比を計算。</small></p></li>
-            <li><span>3</span><p><b>採択 or 棄却</b><small>高い方へは必ず。低い方へも、ときどき進む。</small></p></li>
+            <li><span>1</span><p><b data-how-title="0">次の場所を提案</b><small data-how-copy="0">いまの場所から、σ ぶんランダムにジャンプ。</small></p></li>
+            <li><span>2</span><p><b data-how-title="1">高さをくらべる</b><small data-how-copy="1">候補と現在地の「分布の高さ」の比を計算。</small></p></li>
+            <li><span>3</span><p><b data-how-title="2">採択 or 棄却</b><small data-how-copy="2">高い方へは必ず。低い方へも、ときどき進む。</small></p></li>
           </ol>
           <div class="formula-card">
-            <span>ACCEPTANCE</span>
-            <strong>α = min (1, <i>p(x′)</i> / <i>p(x)</i>)</strong>
-            <small>正規化定数は、比をとると消えてくれる。</small>
+            <span data-formula-kicker>ACCEPTANCE</span>
+            <strong data-formula>α = min (1, <i>p(x′)</i> / <i>p(x)</i>)</strong>
+            <small data-formula-note>正規化定数は、比をとると消えてくれる。</small>
           </div>
         </section>
       </main>
     </div>
 
+    <script src="samplers.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
